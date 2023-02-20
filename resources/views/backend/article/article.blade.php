@@ -20,6 +20,14 @@
                 </ul>
                 <div class="clearfix"></div>
             </div>
+            @if ($message = Session::get('success'))
+                <div class="alert alert-success alert-dismissible " role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                            aria-hidden="true">×</span>
+                    </button>
+                    {{ $message }}
+                </div>
+            @endif
             <a href="/admin/article/create" href class="btn btn-primary">Create Article</a>
             <div class="x_content">
                 <table class="table table-striped">
@@ -39,7 +47,8 @@
                             <tr>
                                 <th scope="row">{{ ++$i }}</th>
                                 <td>{{ $article->title }}</td>
-                                <td><img  src="{{ asset('images/' . $article->thumbnail) }}" height="100" width="100" alt=""></td>
+                                <td><img src="{{ asset('images/' . $article->thumbnail) }}" height="100" width="100"
+                                        alt=""></td>
                                 <td>{{ $article->slug }}</td>
                                 <td>{{ $article->content }}</td>
                                 <td>{{ $article->status == 1 ? 'Publish' : 'Unpublish' }}</td>

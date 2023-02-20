@@ -6,6 +6,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\Auth\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +19,16 @@ use App\Http\Controllers\CommentController;
 |
 */
 
-Route::get('admin', function () {
-    return redirect()->route('admin.index');
-});
+
+Auth::routes(['login' => false]);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::get('auth', [LoginController::class, 'index'])->name('index');
+    Route::post('auth/loginAction', [LoginController::class, 'loginAction'])->name('auth.loginAction');
+    Route::get('auth/actionLogout', [LoginController::class, 'actionLogout'])->name('auth.actionLogout')->middleware('auth');
+});
+
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
     Route::get('dashboard', [DashboardAdminController::class, 'index'])->name('index');
     Route::get('article', [ArticleController::class, 'index'])->name('index');
     Route::get('article/create', [ArticleController::class, 'create'])->name('article.create');
@@ -32,8 +38,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::put('article/update/{id}', [ArticleController::class, 'update'])->name('article.update');
 });
 
-
-Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
     Route::get('category', [CategoryController::class, 'index'])->name('category.index');
     Route::get('category/create', [CategoryController::class, 'create'])->name('category.create');
     Route::get('category/edit/{id}', [CategoryController::class, 'edit'])->name('category.edit');
@@ -42,7 +47,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::put('category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
 });
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
     Route::get('tag', [TagController::class, 'index'])->name('tag.index');
     Route::get('tag/create', [TagController::class, 'create'])->name('tag.create');
     Route::get('tag/edit/{id}', [TagController::class, 'edit'])->name('tag.edit');
@@ -51,7 +56,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::put('tag/update/{id}', [TagController::class, 'update'])->name('tag.update');
 });
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
     Route::get('comment', [CommentController::class, 'index'])->name('comment.index');
     Route::get('comment/create', [CommentController::class, 'create'])->name('comment.create');
     Route::get('comment/edit/{id}', [CommentController::class, 'edit'])->name('comment.edit');
@@ -60,4 +65,5 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::put('comment/update/{id}', [CommentController::class, 'update'])->name('comment.update');
 });
 
+Route::get('admin/login', 'App\Http\Controllers\Auth\LoginController@showLoginForm');
 

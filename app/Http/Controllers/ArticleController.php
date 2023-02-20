@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Tag;
+use App\Models\TagArticle;
 use App\Http\Requests\ArticleRequest;
 
 class ArticleController extends Controller
@@ -27,7 +29,8 @@ class ArticleController extends Controller
     public function create()
     {
         $categories = Category::get();
-        return view('backend.article.create', compact('categories'))->with('i');
+        $tags = Tag::get();
+        return view('backend.article.create', compact('categories', 'tags'))->with('i');
     }
 
     /**
@@ -47,6 +50,17 @@ class ArticleController extends Controller
         $articles['slug'] = strtolower($slug_replace_space);
         $articles['thumbnail'] = $fileName;
         Article::create($articles);
+
+        $articleId = Article::latest()->first()->id;
+        foreach ($request->tag_id as $key => $val) {
+            $tagArticle = new TagArticle;
+            if (in_array($val, $request->tag_id)) {
+                $tagArticle->article_id = $articleId;
+                $tagArticle->tag_id = $val;
+                $tagArticle->save();
+            }
+        }
+       
         return redirect('admin/article')->with('success','article has been created successfully.');
     }
 
@@ -69,7 +83,9 @@ class ArticleController extends Controller
      */
     public function edit($id)
     {
-        //
+        $article = Article::find($id);
+        $categories = Category::get();
+        return view('backend.article.edit', compact('article', 'categories'));
     }
 
     /**
@@ -81,7 +97,31 @@ class ArticleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|max:50|min:5',
+            'slug' => 'required|min:5|max:50',
+            'content' => 'required|min:5',
+            'status' => 'required',
+            'category_id' => 'required',
+        ]);
+  
+        $input = $request->all();
+        
+        if ($image = $request->file('thumbnail')) {
+            $destinationPath = public_path('images');
+            $thumbnail = time().'.'.$image->extension();
+            $image->move($destinationPath, $thumbnail);
+            $input['thumbnail'] = $thumbnail;
+        }else{
+            unset($input['thumbnail']);
+        }
+        $slug_replace_space = str_replace(' ', '-', $input['slug']);
+        $input['slug'] = strtolower($slug_replace_space);
+        $article = Article::find($request->id);
+        $article->update($input);
+    
+        return redirect('admin/article')->with('success','comment has been updated successfully.');
+       
     }
 
     /**
